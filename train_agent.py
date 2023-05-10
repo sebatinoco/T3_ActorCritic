@@ -20,6 +20,10 @@ def perform_single_rollout(env, agent, render=False):
     # np.array(rew_t)   -> shape: (time_steps,)
     # np.array(done_t)  -> shape: (time_steps,)
 
+    dim_states = env.observation_space.shape[0]
+    continuous_control = isinstance(env.action_space, gym.spaces.Box)
+    dim_actions = env.action_space.shape[0] if continuous_control else env.action_space.n
+
     ob_t = env.reset()
     
     done = False
@@ -56,6 +60,16 @@ def perform_single_rollout(env, agent, render=False):
             acs_t = np.array(acs_t)
             rew_t = np.array(rew_t)
             done_t = np.array(done_t)
+            
+            # Testing
+            assert obs_t.shape == (nb_steps, dim_states), 'shape of np.array(obs_t) is not (time_steps, nb_obs)'
+            if continuous_control:
+                assert acs_t.shape == (nb_steps, dim_actions), 'shape of np.array(acs_t) is not (time_steps, nb_acs)'
+            else:
+                assert acs_t.shape == (nb_steps,), 'shape of np.array(acs_t) is not (time_steps,)'
+            assert rew_t.shape == (nb_steps,), 'shape of np.array(rws_t) is not (time_steps,)'
+            assert obs_t.shape == (nb_steps, dim_states), 'shape of np.array(obs_t1) is not (time_steps, nb_obs)'
+            assert done_t.shape == (nb_steps,), 'shape of np.array(done_t) is not (time_steps,)'
             
             return obs_t, acs_t, rew_t, obs_t1, done_t
 

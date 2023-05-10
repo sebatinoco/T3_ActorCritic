@@ -123,7 +123,7 @@ class ActorCriticAgent:
         logits = self._actor(observation_batch)
             
         distr = Categorical(logits = logits)
-        log_probs = distr.log_prob(action_batch)
+        log_probs = distr.log_prob(action_batch).squeeze().to(device)
         
         loss = torch.multiply(-log_probs, advantage_batch)
         
@@ -141,7 +141,7 @@ class ActorCriticAgent:
         std = torch.exp(self._actor._log_std)
         
         distr = Normal(mu, std)
-        log_probs = distr.log_prob(action_batch)
+        log_probs = distr.log_prob(action_batch).squeeze().to(device)
         
         loss = torch.multiply(-log_probs, advantage_batch)
         
@@ -154,10 +154,10 @@ class ActorCriticAgent:
         observation_batch = torch.from_numpy(observation_batch).to(device)
         next_observation_batch = torch.from_numpy(next_observation_batch).to(device)
         
-        td_estimate = self._critic(next_observation_batch).squeeze()
+        td_estimate = self._critic(observation_batch).squeeze()
         
         with torch.no_grad():
-            v_t1 = self._critic(observation_batch).squeeze().numpy()
+            v_t1 = self._critic(next_observation_batch).squeeze().numpy()
             td_target = reward_batch + self._gamma * v_t1 * (1 - done_batch)
             td_target = torch.tensor(td_target).float()
         

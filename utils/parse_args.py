@@ -8,8 +8,8 @@ def parse_args():
     # arguments
     parser.add_argument('--env', type = str, default = 'Pendulum-v1', help = 'environment to run the experiment')
     parser.add_argument('--training_iterations', type = int, default = 100, help = 'training iterations of the experiment')
-    parser.add_argument('--actor_lr', type = float, default = 1e-3, help = 'learning rate of the algorithm')
-    parser.add_argument('--critic_lr', type = float, default = 1e-2, help = 'learning rate of the algorithm')
+    parser.add_argument('--actor_lr', type = float, default = 1e-3, help = 'learning rate of the actor')
+    parser.add_argument('--critic_lr', type = float, default = 1e-2, help = 'learning rate of the critic')
     parser.add_argument('--gamma', type = float, default = .99, help = 'discount factor of the algorithm')
     parser.add_argument('--batch_size', type = int, default = 500, help = 'batch size of the algorithm')
     parser.add_argument('--nb_critic_updates', type = int, default = 100, help = 'number of updates performed by critic')
