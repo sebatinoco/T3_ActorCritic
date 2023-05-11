@@ -41,6 +41,8 @@ __pycache__/
 *$py.class
 backup/
 test.ipynb
+figures/experiment.pdf
+metrics/experiment.csv
 
 # C extensions
 *.so
