@@ -1,6 +1,5 @@
 import gym
 import time
-import datetime
 import csv
 
 import numpy as np
