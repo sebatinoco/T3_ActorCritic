@@ -2,9 +2,9 @@ env: CartPole-v1
 
 train:
   training_iterations: 200
-  min_batch_steps: 5000 # batch_size
-  nb_critic_updates: 1
-  exp_name: exp_12
+  min_batch_steps: 500 # batch_size
+  nb_critic_updates: 100
+  exp_name: CartPole_exp_31
 
 agent:
   actor_lr: 0.001

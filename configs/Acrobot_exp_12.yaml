@@ -1,10 +1,10 @@
-env: CartPole-v1
+env: Acrobot-v1
 
 train:
   training_iterations: 200
-  min_batch_steps: 500 # batch_size
+  min_batch_steps: 5000 # batch_size
   nb_critic_updates: 1
-  exp_name: exp_11
+  exp_name: Acrobot_exp_12
 
 agent:
   actor_lr: 0.001

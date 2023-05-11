@@ -121,7 +121,7 @@ def train_agent(env, agent, training_iterations, min_batch_steps, nb_critic_upda
         # performance metrics
 
         # performance metrics
-        update_performance_metrics(tr_iter, sampled_rollouts, axes, tr_iters_vec, avg_reward_vec, std_reward_vec, avg_steps_vec)
+        update_performance_metrics(tr_iter, sampled_rollouts, axes, tr_iters_vec, avg_reward_vec, std_reward_vec, avg_steps_vec, exp_name)
 
         for _ in range(nb_critic_updates):
             agent.update_critic(sampled_obs_t, sampled_rew_t, sampled_obs_t1, sampled_done_t)
@@ -134,7 +134,7 @@ def train_agent(env, agent, training_iterations, min_batch_steps, nb_critic_upda
     save_metrics(tr_iters_vec, avg_reward_vec, std_reward_vec, exp_name)
 
 
-def update_performance_metrics(tr_iter, sampled_rollouts, axes, tr_iters_vec, avg_reward_vec, std_reward_vec, avg_steps_vec):
+def update_performance_metrics(tr_iter, sampled_rollouts, axes, tr_iters_vec, avg_reward_vec, std_reward_vec, avg_steps_vec, exp_name):
 
     raw_returns     = np.array([np.sum(rollout[2]) for rollout in sampled_rollouts])
     rollout_steps   = np.array([len(rollout[2]) for rollout in sampled_rollouts])
@@ -148,6 +148,7 @@ def update_performance_metrics(tr_iter, sampled_rollouts, axes, tr_iters_vec, av
     # logs 
     print('-' * 32)
     print('%20s : %5d'   % ('Training iter'     ,(tr_iter)              ))
+    print('%20s : %5s'   % ('Experiment'     ,(exp_name)          ))
     print('-' * 32)
     print('%20s : %5.3g' % ('Max episode return', max_episode_return    ))
     print('%20s : %5.3g' % ('Min episode return', min_episode_return    ))
