@@ -6,8 +6,6 @@ from torch.optim import Adam
 
 import numpy as np
 
-device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-
 class Actor(nn.Module):
 
     def __init__(self, dim_states, dim_actions, continuous_control):
@@ -55,7 +53,7 @@ class Critic(nn.Module):
 
 class ActorCriticAgent:
 
-    def __init__(self, dim_states, dim_actions, actor_lr, critic_lr, gamma, continuous_control=False):
+    def __init__(self, dim_states, dim_actions, actor_lr, critic_lr, gamma, continuous_control=False, gpu = 0):
         
         self._actor_lr = actor_lr
         self._critic_lr = critic_lr
@@ -65,13 +63,16 @@ class ActorCriticAgent:
         self._dim_actions = dim_actions
 
         self._continuous_control = continuous_control
+        
+        self.device = f'cuda:{gpu}' if torch.cuda.is_available() else 'cpu'
+        print(f'using {self.device}!')
 
-        self._actor = Actor(self._dim_states, self._dim_actions, self._continuous_control).to(device)
+        self._actor = Actor(self._dim_states, self._dim_actions, self._continuous_control).to(self.device)
 
         # Adam optimizer
         self._actor_optimizer = Adam(self._actor.parameters(), lr = actor_lr)
 
-        self._critic = Critic(self._dim_states).to(device)
+        self._critic = Critic(self._dim_states).to(self.device)
 
         # Adam optimizer
         self._critic_optimizer = Adam(self._critic.parameters(), lr = critic_lr)
@@ -87,7 +88,7 @@ class ActorCriticAgent:
     def _select_action_discrete(self, observation):
         # sample from categorical distribution
         
-        observation = torch.from_numpy(observation).to(device)
+        observation = torch.from_numpy(observation).to(self.device)
         
         with torch.no_grad():
             logits = self._actor(observation)
@@ -101,14 +102,14 @@ class ActorCriticAgent:
         # sample from normal distribution
         # use the log std trainable parameter
         
-        observation = torch.from_numpy(observation).to(device)
+        observation = torch.from_numpy(observation).to(self.device)
         
         with torch.no_grad():
             mu = self._actor(observation)
             std = torch.exp(self._actor._log_std)
         
         distr = Normal(mu, std)
-        action = distr.sample().numpy()
+        action = distr.sample().cpu().numpy()
         
         return action
 
@@ -116,14 +117,14 @@ class ActorCriticAgent:
     def _compute_actor_loss_discrete(self, observation_batch, action_batch, advantage_batch):
         # use negative logprobs * advantages
         
-        observation_batch = observation_batch.to(device)
-        action_batch = torch.from_numpy(action_batch).to(device)
-        advantage_batch = torch.from_numpy(advantage_batch).to(device)
+        observation_batch = observation_batch.to(self.device)
+        action_batch = torch.from_numpy(action_batch).to(self.device)
+        advantage_batch = torch.from_numpy(advantage_batch).to(self.device)
         
         logits = self._actor(observation_batch)
             
         distr = Categorical(logits = logits)
-        log_probs = distr.log_prob(action_batch).squeeze().to(device)
+        log_probs = distr.log_prob(action_batch).squeeze().to(self.device)
         
         loss = torch.multiply(-log_probs, advantage_batch)
         
@@ -133,15 +134,15 @@ class ActorCriticAgent:
     def _compute_actor_loss_continuous(self, observation_batch, action_batch, advantage_batch):
         # use negative logprobs * advantages
         
-        observation_batch = observation_batch.to(device)
-        action_batch = torch.from_numpy(action_batch).to(device)
-        advantage_batch = torch.from_numpy(advantage_batch).to(device)
+        observation_batch = observation_batch.to(self.device)
+        action_batch = torch.from_numpy(action_batch).to(self.device)
+        advantage_batch = torch.from_numpy(advantage_batch).to(self.device)
         
         mu = self._actor(observation_batch)
         std = torch.exp(self._actor._log_std)
         
         distr = Normal(mu, std)
-        log_probs = distr.log_prob(action_batch).squeeze().to(device)
+        log_probs = distr.log_prob(action_batch).squeeze().to(self.device)
         
         loss = torch.multiply(-log_probs, advantage_batch)
         
@@ -151,18 +152,18 @@ class ActorCriticAgent:
     def _compute_critic_loss(self, observation_batch, reward_batch, next_observation_batch, done_batch):
         # minimize mean((r + gamma * V(s_t1) - V(s_t))^2)
         
-        observation_batch = torch.from_numpy(observation_batch).to(device)
-        next_observation_batch = torch.from_numpy(next_observation_batch).to(device)
+        observation_batch = torch.from_numpy(observation_batch).to(self.device)
+        next_observation_batch = torch.from_numpy(next_observation_batch).to(self.device)
         
         td_estimate = self._critic(observation_batch).squeeze()
         
         #with torch.no_grad():
-        #    v_t1 = self._critic(next_observation_batch).squeeze().numpy()
+        #    v_t1 = self._critic(next_observation_batch).squeeze().cpu().numpy()
         #    td_target = reward_batch + self._gamma * v_t1 * (1 - done_batch)
-        #    td_target = torch.tensor(td_target).float()
+        #    td_target = torch.tensor(td_target, device = self.device).float()
         
         v_t1 = self._critic(next_observation_batch).squeeze()
-        td_target = torch.tensor(reward_batch) + self._gamma * v_t1 * torch.tensor(1 - done_batch)
+        td_target = torch.tensor(reward_batch, device = self.device) + self._gamma * v_t1 * torch.tensor(1 - done_batch, device = self.device)
         td_target = td_target.float()
         
         return F.mse_loss(td_estimate, td_target)
@@ -172,12 +173,12 @@ class ActorCriticAgent:
         # compute the advantages using the critic and update the actor parameters
         # use self._compute_actor_loss
         
-        observation_batch = torch.from_numpy(observation_batch).to(device)
-        next_observation_batch = torch.from_numpy(next_observation_batch).to(device)
+        observation_batch = torch.from_numpy(observation_batch).to(self.device)
+        next_observation_batch = torch.from_numpy(next_observation_batch).to(self.device)
         
         with torch.no_grad():
-            v_t = self._critic(observation_batch).squeeze().numpy()
-            v_t1 = self._critic(next_observation_batch).squeeze().numpy()
+            v_t = self._critic(observation_batch).squeeze().cpu().numpy()
+            v_t1 = self._critic(next_observation_batch).squeeze().cpu().numpy()
             advantage_batch = reward_batch + (self._gamma * v_t1) * (1 - done_batch) - v_t
         
         loss = self._compute_actor_loss(observation_batch, action_batch, advantage_batch)

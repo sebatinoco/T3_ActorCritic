@@ -1,10 +1,10 @@
 env: Pendulum-v1
+exp_name: exp_32_001
 
 train:
   training_iterations: 2000
   min_batch_steps: 5000 # batch_size
   nb_critic_updates: 100
-  exp_name: Pendulum_exp_32_001
 
 agent:
   actor_lr: 0.001
