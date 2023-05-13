@@ -1,5 +1,5 @@
 env: Pendulum-v1
-exp_name: exp_32_001
+exp_name: exp_32_01
 
 train:
   training_iterations: 2000

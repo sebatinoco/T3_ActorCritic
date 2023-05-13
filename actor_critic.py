@@ -157,14 +157,14 @@ class ActorCriticAgent:
         
         td_estimate = self._critic(observation_batch).squeeze()
         
-        #with torch.no_grad():
-        #    v_t1 = self._critic(next_observation_batch).squeeze().cpu().numpy()
-        #    td_target = reward_batch + self._gamma * v_t1 * (1 - done_batch)
-        #    td_target = torch.tensor(td_target, device = self.device).float()
+        with torch.no_grad():
+            v_t1 = self._critic(next_observation_batch).squeeze().cpu().numpy()
+            td_target = reward_batch + self._gamma * v_t1 * (1 - done_batch)
+            td_target = torch.tensor(td_target, device = self.device).float()
         
-        v_t1 = self._critic(next_observation_batch).squeeze()
-        td_target = torch.tensor(reward_batch, device = self.device) + self._gamma * v_t1 * torch.tensor(1 - done_batch, device = self.device)
-        td_target = td_target.float()
+        #v_t1 = self._critic(next_observation_batch).squeeze()
+        #td_target = torch.tensor(reward_batch, device = self.device) + self._gamma * v_t1 * torch.tensor(1 - done_batch, device = self.device)
+        #td_target = td_target.float()
         
         return F.mse_loss(td_estimate, td_target)
 
