@@ -12,6 +12,7 @@ r_args = run_args()
 filter_env = r_args['env']
 filter_config = r_args['filter_config']
 gpu = r_args['gpu']
+n_trials = r_args['n_trials']
 
 # list configs
 configs = sorted(os.listdir('configs'))
@@ -26,9 +27,6 @@ if filter_env or filter_config:
     configs = [config for config in configs if config in final_configs] # filter configs
 
 print('Running experiments on the following configs: ', configs)
-
-# number of trials
-n_trials = 3
 
 for trial in range(1, n_trials + 1):
     start_time = time.time()
