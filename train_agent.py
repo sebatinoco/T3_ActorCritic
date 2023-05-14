@@ -67,7 +67,7 @@ def perform_single_rollout(env, agent, render=False):
             else:
                 assert acs_t.shape == (nb_steps,), 'shape of np.array(acs_t) is not (time_steps,)'
             assert rew_t.shape == (nb_steps,), 'shape of np.array(rws_t) is not (time_steps,)'
-            assert obs_t.shape == (nb_steps, dim_states), 'shape of np.array(obs_t1) is not (time_steps, nb_obs)'
+            assert obs_t1.shape == (nb_steps, dim_states), 'shape of np.array(obs_t1) is not (time_steps, nb_obs)'
             assert done_t.shape == (nb_steps,), 'shape of np.array(done_t) is not (time_steps,)'
             
             return obs_t, acs_t, rew_t, obs_t1, done_t
@@ -84,15 +84,15 @@ def sample_rollouts(env, agent, training_iter, min_batch_steps):
         episode_nb += 1
         #render = training_iter%10 == 0 and len(sampled_rollouts) == 0
         render = False
-
-        # Use perform_single_rollout to get data 
-        # Uncomment once perform_single_rollout works.
-        # Return sampled_rollouts
         
         sample_rollout = perform_single_rollout(env, agent, render=render)
         total_nb_steps += len(sample_rollout[0])
 
         sampled_rollouts.append(sample_rollout)
+        
+    # Testing    
+    assert sum([len(rollout[0]) for rollout in sampled_rollouts]) >= min_batch_steps, 'number of total steps is not equal or greater than min_batch_steps'
+    assert all([len(rollout) == 5 for rollout in sampled_rollouts]), 'dimension of sampled rollouts are not equal to 3: (obs, acs, rws, obs_t1, done)'
         
     return sampled_rollouts
 

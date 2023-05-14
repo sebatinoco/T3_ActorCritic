@@ -53,7 +53,7 @@ class Critic(nn.Module):
 
 class ActorCriticAgent:
 
-    def __init__(self, dim_states, dim_actions, actor_lr, critic_lr, gamma, continuous_control=False, gpu = 0):
+    def __init__(self, dim_states, dim_actions, actor_lr, critic_lr, gamma, continuous_control=False, device = 'cpu'):
         
         self._actor_lr = actor_lr
         self._critic_lr = critic_lr
@@ -64,8 +64,7 @@ class ActorCriticAgent:
 
         self._continuous_control = continuous_control
         
-        self.device = f'cuda:{gpu}' if torch.cuda.is_available() else 'cpu'
-        print(f'using {self.device}!')
+        self.device = device
 
         self._actor = Actor(self._dim_states, self._dim_actions, self._continuous_control).to(self.device)
 
@@ -161,10 +160,6 @@ class ActorCriticAgent:
             v_t1 = self._critic(next_observation_batch).squeeze().cpu().numpy()
             td_target = reward_batch + self._gamma * v_t1 * (1 - done_batch)
             td_target = torch.tensor(td_target, device = self.device).float()
-        
-        #v_t1 = self._critic(next_observation_batch).squeeze()
-        #td_target = torch.tensor(reward_batch, device = self.device) + self._gamma * v_t1 * torch.tensor(1 - done_batch, device = self.device)
-        #td_target = td_target.float()
         
         return F.mse_loss(td_estimate, td_target)
 

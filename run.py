@@ -6,15 +6,21 @@ from train_agent import train_agent
 import time
 from utils.run_args import run_args
 from utils.plot_experiment import plot_experiment
+from utils.test_methods import test_methods
+import torch
 
 if __name__ == '__main__':
-
+    
+    # test perform_single_rollout & sample_rollouts
+    test_methods(n_trials = 10)
+    
     # run args
     r_args = run_args()
 
     filter_env = r_args['env']
     filter_config = r_args['filter_config']
-    gpu = r_args['gpu']
+    device = f"cuda:{r_args['gpu']}" if torch.cuda.is_available() else 'cpu'
+    print(f'using {device}!')
     n_trials = r_args['n_trials']
 
     # list configs
@@ -55,7 +61,7 @@ if __name__ == '__main__':
             actor_critic_agent = ActorCriticAgent(dim_states = dim_states,
                                                 dim_actions = dim_actions,
                                                 continuous_control = continuous_control,
-                                                gpu = gpu,
+                                                device = device,
                                                 **args['agent'],
                                                 )
 
